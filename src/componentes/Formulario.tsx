@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect} from 'react';
 import { Registro } from '../types/Registro';
 
 interface Props {
@@ -18,21 +18,99 @@ const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
     fecha: ''
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const [errorNombre, setErrorNombre] = useState('');
+
+    useEffect(() => {
+    if (registroEditando) {
+      setFormData(registroEditando);
+    }
+  }, [registroEditando]);
+
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: name === 'edad' ? Number(value) : value });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'edad' ? Number(value) : value
+    }));
+
+    if (name === 'nombre') {
+      if (value.trim().length < 3) {
+        setErrorNombre('El nombre debe tener al menos 3 caracteres');
+      } else {
+        setErrorNombre('');
+      }
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (formData.nombre.trim().length < 3) {
+      setErrorNombre('El nombre debe tener al menos 3 caracteres');
+      return;
+    }
+
+    if (
+      !formData.nombre ||
+      !formData.genero ||
+      !formData.descripcion ||
+      !formData.fecha
+    ) {
+      alert('Todos los campos son requeridos');
+      return;
+    }
+
+    const nuevoRegistro = {
+      ...formData,
+      id: formData.id || Date.now().toString()
+    };
+
+    onAgregar(nuevoRegistro);
+
+    setFormData({
+      id: '',
+      nombre: '',
+      edad: 0,
+      genero: '',
+      descripcion: '',
+      fecha: ''
+    });
+
+    setErrorNombre('');
+    onActualizar();
   };
 
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       nombre<br />
-      <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} /><br />
+      <input
+        type="text"
+        name="nombre"
+        value={formData.nombre}
+        onChange={handleChange}
+        required
+      /><br />
+      {errorNombre && <span style={{ color: 'red' }}>{errorNombre}</span>}<br />
 
       edad<br />
-      <input type="number" name="edad" value={formData.edad} onChange={handleChange} /><br />
+      <input
+        type="number"
+        name="edad"
+        value={formData.edad}
+        onChange={handleChange}
+        required
+      /><br />
 
       genero<br />
-      <select name="genero" value={formData.genero} onChange={handleChange}>
+      <select
+        name="genero"
+        value={formData.genero}
+        onChange={handleChange}
+        required
+      >
         <option value="">Seleccione género</option>
         <option value="Hombre">Hombre</option>
         <option value="Mujer">Mujer</option>
@@ -40,12 +118,25 @@ const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
       </select><br />
 
       fecha de nacimiento<br />
-      <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} /><br />
+      <input
+        type="date"
+        name="fecha"
+        value={formData.fecha}
+        onChange={handleChange}
+        required
+      /><br />
 
       descripción<br />
-      <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} /><br />
+      <textarea
+        name="descripcion"
+        value={formData.descripcion}
+        onChange={handleChange}
+        required
+      /><br />
 
-      <button type="submit">Agregar</button>
+      <button type="submit">
+        {formData.id ? 'Actualizar' : 'Agregar'}
+      </button>
     </form>
   );
 };
