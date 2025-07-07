@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { Registro } from '../types/Registro';
 
-const Formulario = () => {
+interface Props {
+  onAgregar: (reg: Registro) => void;
+  registroEditando?: Registro | null;
+  onActualizar: () => void;
+}
+
+
+const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
   const [formData, setFormData] = useState<Registro>({
     id: '',
     nombre: '',
