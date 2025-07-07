@@ -1,4 +1,4 @@
-import { useState,useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { Registro } from '../types/Registro';
 
 interface Props {
@@ -6,7 +6,6 @@ interface Props {
   registroEditando?: Registro | null;
   onActualizar: () => void;
 }
-
 
 const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
   const [formData, setFormData] = useState<Registro>({
@@ -19,28 +18,39 @@ const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
   });
 
   const [errorNombre, setErrorNombre] = useState('');
+  const [errorEdad, setErrorEdad] = useState('');
 
-    useEffect(() => {
+  useEffect(() => {
     if (registroEditando) {
       setFormData(registroEditando);
     }
   }, [registroEditando]);
 
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'edad' ? Number(value) : value
     }));
 
+    
     if (name === 'nombre') {
       if (value.trim().length < 3) {
         setErrorNombre('El nombre debe tener al menos 3 caracteres');
       } else {
         setErrorNombre('');
+      }
+    }
+
+    
+    if (name === 'edad') {
+      if (Number(value) <= 0) {
+        setErrorEdad('La edad debe ser mayor a 0');
+      } else {
+        setErrorEdad('');
       }
     }
   };
@@ -50,6 +60,11 @@ const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
 
     if (formData.nombre.trim().length < 3) {
       setErrorNombre('El nombre debe tener al menos 3 caracteres');
+      return;
+    }
+
+    if (formData.edad <= 0) {
+      setErrorEdad('La edad debe ser mayor a 0');
       return;
     }
 
@@ -80,6 +95,7 @@ const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
     });
 
     setErrorNombre('');
+    setErrorEdad('');
     onActualizar();
   };
 
@@ -103,6 +119,7 @@ const Formulario = ({ onAgregar, registroEditando, onActualizar }: Props) => {
         onChange={handleChange}
         required
       /><br />
+      {errorEdad && <span style={{ color: 'red' }}>{errorEdad}</span>}<br />
 
       genero<br />
       <select
